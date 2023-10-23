@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"math"
 	"todogorest/data/request"
 	"todogorest/data/response"
 	"todogorest/models"
@@ -45,17 +46,33 @@ func (t *TodoRepositoryImpl) Delete(todoId int) error {
 }
 
 // GetAll implements TodoRepository.
-func (t *TodoRepositoryImpl) GetAll(pageReq request.PaginationRequest) (response.PaginationResponse, error) {
+func (t *TodoRepositoryImpl) GetAll(pageReq request.PaginationRequest) (response.PaginationResponse[models.Todo], error) {
 	var todos []models.Todo
 
 	offset := (pageReq.Page - 1) * pageReq.Size
-	result := t.Db.Limit(pageReq.Size).Offset(offset).Find(&todos)
+	total := int64(0)
+
+	result := t.Db.Model(&models.Todo{}).Count(&total).Limit(pageReq.Size).Offset(offset).Find(&todos)
+
+	totalPages := math.Ceil(float64(total) / float64(int64(pageReq.Size)))
+
+	hasNext := pageReq.Page < int(totalPages)
+
+	hasPrev := pageReq.Page > 1
 
 	if result.Error != nil {
-		return response.PaginationResponse{}, result.Error
+		return response.PaginationResponse[models.Todo]{}, result.Error
 	}
 
-	return response.PaginationResponse{PerPage: pageReq.Size, CurrentPage: pageReq.Page, Items: todos}, nil
+	return response.PaginationResponse[models.Todo]{
+		PerPage:     pageReq.Size,
+		CurrentPage: pageReq.Page,
+		Items:       todos, Total: int(total),
+		TotalPages: int(totalPages),
+		HasNext:    hasNext,
+		HasPrev:    hasPrev,
+		Visible:    len(todos),
+	}, nil
 }
 
 // GetById implements TodoRepository.

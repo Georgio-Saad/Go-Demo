@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 	"strconv"
+	"todogorest/constants"
 	"todogorest/data/request"
 	"todogorest/data/response"
 	"todogorest/helpers"
@@ -36,15 +37,20 @@ func (controller *TodoController) CreateTodo(ctx *gin.Context) {
 }
 
 func (controller *TodoController) GetAllTodos(ctx *gin.Context) {
-	page, err := strconv.Atoi(ctx.Query("page"))
+	page, pageErr := strconv.Atoi(ctx.Query("page"))
 	size, sizeErr := strconv.Atoi(ctx.Query("limit"))
 
-	if err != nil || sizeErr != nil {
-		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{StatusCode: http.StatusBadRequest, Code: helpers.BadRequest, Data: response.ErrorMessage{Message: err.Error()}})
-		return
-	}
+	var res response.Response
 
-	res := controller.todoService.FindAll(request.PaginationRequest{Page: page, Size: size})
+	if sizeErr != nil && (pageErr != nil || page < 1) {
+		res = controller.todoService.FindAll(request.PaginationRequest{Page: 1, Size: constants.PerPage})
+	} else if sizeErr != nil {
+		res = controller.todoService.FindAll(request.PaginationRequest{Page: page, Size: constants.PerPage})
+	} else if pageErr != nil || page < 1 {
+		res = controller.todoService.FindAll(request.PaginationRequest{Page: 1, Size: size})
+	} else {
+		res = controller.todoService.FindAll(request.PaginationRequest{Page: page, Size: size})
+	}
 
 	if res.StatusCode != http.StatusOK {
 		ctx.JSON(res.StatusCode, response.ErrorResponse{StatusCode: res.StatusCode, Code: res.Code, Data: response.ErrorMessage{Message: res.Message}})

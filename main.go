@@ -38,10 +38,6 @@ func main() {
 	// Routes
 	routes := routes.NewRouter(todoController)
 
-	r.GET("/", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{"message": "Okay"})
-	})
-
 	server := &http.Server{
 		Addr:    ":5051",
 		Handler: routes,
