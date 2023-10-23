@@ -4,7 +4,8 @@ type PaginationResponse[T any] struct {
 	Items       []T  `json:"items"`
 	PerPage     int  `json:"per_page"`
 	Total       int  `json:"total"`
-	TotalPages  int  `json:"total_pages"`
+	FirstPage   int  `json:"first_page"`
+	LastPage    int  `json:"last_page"`
 	HasNext     bool `json:"has_next"`
 	HasPrev     bool `json:"has_prev"`
 	Visible     int  `json:"visible"`

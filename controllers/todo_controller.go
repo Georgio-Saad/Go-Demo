@@ -42,9 +42,9 @@ func (controller *TodoController) GetAllTodos(ctx *gin.Context) {
 
 	var res response.Response
 
-	if sizeErr != nil && (pageErr != nil || page < 1) {
+	if (sizeErr != nil || size < 1) && (pageErr != nil || page < 1) {
 		res = controller.todoService.FindAll(request.PaginationRequest{Page: 1, Size: constants.PerPage})
-	} else if sizeErr != nil {
+	} else if sizeErr != nil || size < 1 {
 		res = controller.todoService.FindAll(request.PaginationRequest{Page: page, Size: constants.PerPage})
 	} else if pageErr != nil || page < 1 {
 		res = controller.todoService.FindAll(request.PaginationRequest{Page: 1, Size: size})

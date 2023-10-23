@@ -22,6 +22,8 @@ func main() {
 
 	db.Table("todos").AutoMigrate(&models.Todo{})
 
+	db.Table("users").AutoMigrate(&models.User{})
+
 	r.NoRoute(func(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, response.ErrorResponse{StatusCode: http.StatusNotFound, Code: helpers.NotFound, Data: response.ErrorMessage{Message: "Route not found"}})
 	})
