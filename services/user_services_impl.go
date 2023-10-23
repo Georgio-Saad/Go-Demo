@@ -2,6 +2,7 @@ package services
 
 import (
 	"net/http"
+	"time"
 	"todogorest/data/request"
 	"todogorest/data/response"
 	"todogorest/helpers"
@@ -29,28 +30,43 @@ func (s *UserServicesImpl) Create(user request.CreateUserRequest) response.Respo
 		return response.Response{StatusCode: http.StatusBadRequest, Message: err.Error(), Code: helpers.BadRequest}
 	}
 
-	privateKey, pkErr := jwt.LoadPrivateKeyRSA("../rsapss_private_key.pem")
+	accessTokenPrivateKey, pkErr := jwt.LoadPrivateKeyRSA("./rsapss_private_key.pem")
+	refreshTokenPrivateKey, rfPkErr := jwt.LoadPrivateKeyRSA("./rsa_private_key.pem")
 
 	if pkErr != nil {
 		return response.Response{StatusCode: http.StatusBadRequest, Message: pkErr.Error(), Code: helpers.BadRequest}
 	}
 
+	if rfPkErr != nil {
+		return response.Response{StatusCode: http.StatusBadRequest, Message: rfPkErr.Error(), Code: helpers.BadRequest}
+	}
+
+	accessTokenClaims := &helpers.JWTClaims{
+		User:   userCreated,
+		Claims: jwt.Claims{Expiry: time.Now().Add(15 * time.Minute).Unix()},
+	}
+
+	refreshTokenClaims := &helpers.JWTClaims{
+		User:   userCreated,
+		Claims: jwt.Claims{Expiry: time.Now().Add(2 * 7 * 24 * time.Hour).Unix()},
+	}
+
 	accessToken, jwtErr := jwt.SignEncrypted(
 		jwt.RS256,
-		privateKey,
+		accessTokenPrivateKey,
 		func(plainPayload []byte) ([]byte, error) {
 			return []byte{}, nil
 		},
-		userCreated,
+		accessTokenClaims,
 	)
 
 	refreshToken, refErr := jwt.SignEncrypted(
 		jwt.RS256,
-		privateKey,
+		refreshTokenPrivateKey,
 		func(plainPayload []byte) ([]byte, error) {
 			return []byte{}, nil
 		},
-		userCreated,
+		refreshTokenClaims,
 	)
 
 	if jwtErr != nil {
@@ -61,7 +77,17 @@ func (s *UserServicesImpl) Create(user request.CreateUserRequest) response.Respo
 		return response.Response{StatusCode: http.StatusBadRequest, Message: jwtErr.Error(), Code: helpers.BadRequest}
 	}
 
-	return response.Response{StatusCode: http.StatusCreated, Message: "Successfully created user", Code: helpers.Success, Data: response.AuthResponse{User: userCreated, AccessToken: string(accessToken), RefreshToken: string(refreshToken), ExpiresAt: ""}}
+	return response.Response{
+		StatusCode: http.StatusCreated,
+		Message:    "Successfully created user",
+		Code:       helpers.Success,
+		Data: response.AuthResponse{
+			User:         userCreated,
+			AccessToken:  string(accessToken),
+			RefreshToken: string(refreshToken),
+			ExpiresAt:    time.Now().Add(15 * time.Minute).Local().String(),
+		},
+	}
 }
 
 // Delete implements UserServices.

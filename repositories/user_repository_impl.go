@@ -16,7 +16,7 @@ type UserRepositoryImpl struct {
 
 // FindByUsername implements UserRepository.
 func (u *UserRepositoryImpl) FindUser(username string, password string) (models.User, error) {
-	var user models.User
+	var user = models.User{Username: username}
 
 	result := u.Db.First(&user, username)
 
@@ -35,23 +35,23 @@ func (u *UserRepositoryImpl) FindUser(username string, password string) (models.
 
 // Create implements UserRepository.
 func (u UserRepositoryImpl) Create(userDetails request.CreateUserRequest) (models.User, error) {
-	var user = models.User{}
+	var userAlreadyExists models.User
 
-	userAlreadyFound := u.Db.First(&user, userDetails.Username)
+	userResult := u.Db.Model(&models.User{}).Where("username = ?", userDetails.Username).Find(&userAlreadyExists)
 
-	if userAlreadyFound.Error == nil {
+	if userResult.RowsAffected > 0 {
 		return models.User{}, errors.New("A user with this username already exists")
 	}
 
 	password, _ := bcrypt.GenerateFromPassword([]byte(userDetails.Password), 12)
-
-	user.Username = userDetails.Username
-	user.Locale = userDetails.Locale
-	user.Password = string(password)
-	user.Email = userDetails.Email
-	user.DateOfBirth = userDetails.DateOfBirth
-	user.CountryCode = userDetails.CountryCode
-	user.PhoneNumber = userDetails.PhoneNumber
+	var user = models.User{Username: userDetails.Username,
+		Locale:      userDetails.Locale,
+		Password:    string(password),
+		Email:       userDetails.Email,
+		DateOfBirth: userDetails.DateOfBirth,
+		CountryCode: userDetails.CountryCode,
+		PhoneNumber: userDetails.PhoneNumber,
+	}
 
 	result := u.Db.Create(&user)
 
