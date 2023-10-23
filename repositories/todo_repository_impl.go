@@ -68,11 +68,11 @@ func (t *TodoRepositoryImpl) GetAll(pageReq request.PaginationRequest) (response
 		PerPage:     pageReq.Size,
 		CurrentPage: pageReq.Page,
 		Items:       todos, Total: int(total),
-		FirstPage:  1,
-		LastPage:   int(totalPages),
-		HasNext:    hasNext,
-		HasPrev:    hasPrev,
-		Visible:    len(todos),
+		FirstPage: 1,
+		LastPage:  int(totalPages),
+		HasNext:   hasNext,
+		HasPrev:   hasPrev,
+		Visible:   len(todos),
 	}, nil
 }
 

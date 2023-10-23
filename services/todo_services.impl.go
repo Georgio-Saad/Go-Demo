@@ -16,7 +16,7 @@ type TodoServicesImpl struct {
 
 // Create implements TodoServices.
 func (s *TodoServicesImpl) Create(todo request.TodoRequest) response.Response {
-	validationErr := validations.ValidateTodoRequest(todo)
+	validationErr := validations.ValidateRequest(todo)
 
 	if validationErr != nil {
 		return response.Response{StatusCode: http.StatusUnprocessableEntity, Code: helpers.UnprocessableEntity, Message: validationErr.Error()}
@@ -81,7 +81,7 @@ func (s *TodoServicesImpl) Update(todo request.TodoRequest, todoId string) respo
 		return response.Response{StatusCode: http.StatusBadRequest, Message: err.Error(), Code: helpers.BadRequest}
 	}
 
-	validationErr := validations.ValidateTodoRequest(todo)
+	validationErr := validations.ValidateRequest(todo)
 
 	if validationErr != nil {
 		return response.Response{StatusCode: http.StatusUnprocessableEntity, Message: validationErr.Error(), Code: helpers.UnprocessableEntity}

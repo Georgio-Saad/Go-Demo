@@ -30,15 +30,18 @@ func main() {
 
 	// Todo repositories
 	todoRepositories := repositories.NewTodoRepository(db)
+	userRepositories := repositories.NewUserRepository(db)
 
 	// Services
 	todoServices := services.NewTodoServicesImpl(todoRepositories)
+	userServices := services.NewUserServicesImpl(userRepositories)
 
 	// Controllers
 	todoController := controllers.NewTodoController(todoServices)
+	userController := controllers.NewUserController(userServices)
 
 	// Routes
-	routes := routes.NewRouter(todoController)
+	routes := routes.NewRouter(todoController, userController)
 
 	server := &http.Server{
 		Addr:    ":5051",

@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewRouter(todoController *controllers.TodoController) *gin.Engine {
+func NewRouter(todoController *controllers.TodoController, userController *controllers.UserController) *gin.Engine {
 	router := gin.Default()
 
 	baseRouter := router.Group("/api")
@@ -18,7 +18,7 @@ func NewRouter(todoController *controllers.TodoController) *gin.Engine {
 
 	authRouter.POST("/signin")
 
-	authRouter.POST("/signup")
+	authRouter.POST("/signup", userController.Signup)
 
 	authRouter.PUT("/me")
 
