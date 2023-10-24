@@ -34,7 +34,7 @@ func (v *VerificationCodeRepositoryImpl) Create(verificationCodeDetails request.
 
 	userResult := v.Db.Model(&models.User{}).Where("id = ?", verificationCodeDetails.UserID).Find(&user)
 
-	alreadyExistsResult := v.Db.Model(&models.VerificationCode{}).Where("user_id = ?", verificationCodeDetails.UserID).Find(&verificationCodeAlreadyExists)
+	alreadyExistsResult := v.Db.Model(&models.VerificationCode{}).Where("user_id = ?", verificationCodeDetails.UserID).First(&verificationCodeAlreadyExists)
 
 	if userResult.RowsAffected == 0 {
 		return models.VerificationCode{}, errors.New("User doesn't exist")

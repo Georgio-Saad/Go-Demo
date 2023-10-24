@@ -50,10 +50,10 @@ func (controller *VerificationCodeController) CreateVerificationCode(ctx *gin.Co
 
 	createVerificationCodeRequest := request.VerificationCodeRequest{UserID: id}
 
-	err := ctx.ShouldBindJSON(&createVerificationCodeRequest)
+	bindErr := ctx.ShouldBindJSON(&createVerificationCodeRequest)
 
-	if err != nil {
-		ctx.JSON(http.StatusConflict, response.ErrorResponse{StatusCode: http.StatusConflict, Code: helpers.InvalidData, Data: response.ErrorMessage{Message: err.Error()}})
+	if bindErr != nil {
+		ctx.JSON(http.StatusConflict, response.ErrorResponse{StatusCode: http.StatusConflict, Code: helpers.InvalidData, Data: response.ErrorMessage{Message: bindErr.Error()}})
 		return
 	}
 
@@ -74,10 +74,10 @@ func (controller *VerificationCodeController) UpdateVerificationCode(ctx *gin.Co
 
 	updateVerificationCodeRequest := request.VerificationCodeRequest{UserID: id}
 
-	err := ctx.ShouldBindJSON(&updateVerificationCodeRequest)
+	bindErr := ctx.ShouldBindJSON(&updateVerificationCodeRequest)
 
-	if err != nil {
-		ctx.JSON(http.StatusConflict, response.ErrorResponse{StatusCode: http.StatusConflict, Code: helpers.InvalidData, Data: response.ErrorMessage{Message: err.Error()}})
+	if bindErr != nil {
+		ctx.JSON(http.StatusConflict, response.ErrorResponse{StatusCode: http.StatusConflict, Code: helpers.InvalidData, Data: response.ErrorMessage{Message: bindErr.Error()}})
 		return
 	}
 

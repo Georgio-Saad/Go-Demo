@@ -22,10 +22,10 @@ func (s *VerificationCodeServicesImpl) Create(verificationCodeRequest request.Ve
 		return response.Response{StatusCode: http.StatusUnprocessableEntity, Message: createVerificationCodeErr.Error(), Code: helpers.UnprocessableEntity}
 	}
 
-	verificationCode, err := s.VerificationCodeRepository.Create(verificationCodeRequest)
+	verificationCode, resErr := s.VerificationCodeRepository.Create(verificationCodeRequest)
 
-	if err != nil {
-		return response.Response{StatusCode: http.StatusBadRequest, Message: err.Error(), Code: helpers.BadRequest}
+	if resErr != nil {
+		return response.Response{StatusCode: http.StatusBadRequest, Message: resErr.Error(), Code: helpers.BadRequest}
 	}
 
 	return response.Response{StatusCode: http.StatusCreated, Message: "Success", Code: helpers.Success, Data: verificationCode}

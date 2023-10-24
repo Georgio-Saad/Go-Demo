@@ -17,10 +17,10 @@ type UserController struct {
 func (controller *UserController) RefreshUser(ctx *gin.Context) {
 	refreshUserRequest := request.RefreshUserRequest{}
 
-	err := ctx.ShouldBindJSON(&refreshUserRequest)
+	jsonErr := ctx.ShouldBindJSON(&refreshUserRequest)
 
-	if err != nil {
-		ctx.JSON(http.StatusConflict, response.ErrorResponse{StatusCode: http.StatusConflict, Code: helpers.InvalidData, Data: response.ErrorMessage{Message: err.Error()}})
+	if jsonErr != nil {
+		ctx.JSON(http.StatusConflict, response.ErrorResponse{StatusCode: http.StatusConflict, Code: helpers.InvalidData, Data: response.ErrorMessage{Message: jsonErr.Error()}})
 		return
 	}
 
@@ -37,10 +37,10 @@ func (controller *UserController) RefreshUser(ctx *gin.Context) {
 func (controller *UserController) Signup(ctx *gin.Context) {
 	createUserRequest := request.CreateUserRequest{}
 
-	err := ctx.ShouldBindJSON(&createUserRequest)
+	jsonErr := ctx.ShouldBindJSON(&createUserRequest)
 
-	if err != nil {
-		ctx.JSON(http.StatusConflict, response.ErrorResponse{StatusCode: http.StatusConflict, Code: helpers.InvalidData, Data: response.ErrorMessage{Message: err.Error()}})
+	if jsonErr != nil {
+		ctx.JSON(http.StatusConflict, response.ErrorResponse{StatusCode: http.StatusConflict, Code: helpers.InvalidData, Data: response.ErrorMessage{Message: jsonErr.Error()}})
 		return
 	}
 
@@ -57,10 +57,10 @@ func (controller *UserController) Signup(ctx *gin.Context) {
 func (controller *UserController) Signin(ctx *gin.Context) {
 	signinUserRequest := request.SigninUserRequest{}
 
-	err := ctx.ShouldBindJSON(&signinUserRequest)
+	jsonErr := ctx.ShouldBindJSON(&signinUserRequest)
 
-	if err != nil {
-		ctx.JSON(http.StatusConflict, response.ErrorResponse{StatusCode: http.StatusConflict, Code: helpers.InvalidData, Data: response.ErrorMessage{Message: err.Error()}})
+	if jsonErr != nil {
+		ctx.JSON(http.StatusConflict, response.ErrorResponse{StatusCode: http.StatusConflict, Code: helpers.InvalidData, Data: response.ErrorMessage{Message: jsonErr.Error()}})
 		return
 	}
 

@@ -24,10 +24,10 @@ func (s *UserServicesImpl) Refresh(token string) response.Response {
 		return response.Response{StatusCode: http.StatusUnprocessableEntity, Message: "Token is required", Code: helpers.UnprocessableEntity}
 	}
 
-	_, accessDec, err := jwt.GCM(constants.AccessEncKey, nil)
+	_, accessDec, decErr := jwt.GCM(constants.AccessEncKey, nil)
 
-	if err != nil {
-		return response.Response{StatusCode: http.StatusUnauthorized, Code: helpers.Unauthenticated, Message: err.Error()}
+	if decErr != nil {
+		return response.Response{StatusCode: http.StatusUnauthorized, Code: helpers.Unauthenticated, Message: decErr.Error()}
 	}
 
 	decToken, jwtErr := jwt.VerifyEncrypted(jwt.HS256, constants.RefreshSignKey, accessDec, []byte(token))
@@ -87,10 +87,10 @@ func (s *UserServicesImpl) Create(user request.CreateUserRequest) response.Respo
 		return response.Response{StatusCode: http.StatusUnprocessableEntity, Message: validationErr.Error(), Code: helpers.UnprocessableEntity, Data: validationErr}
 	}
 
-	userCreated, err := s.UserRepository.Create(user)
+	userCreated, createErr := s.UserRepository.Create(user)
 
-	if err != nil {
-		return response.Response{StatusCode: http.StatusBadRequest, Message: err.Error(), Code: helpers.BadRequest}
+	if createErr != nil {
+		return response.Response{StatusCode: http.StatusBadRequest, Message: createErr.Error(), Code: helpers.BadRequest}
 	}
 
 	accessToken, jwtErr := helpers.GenerateAccessToken(userCreated)
@@ -129,10 +129,10 @@ func (*UserServicesImpl) FindAll(request.PaginationRequest) response.Response {
 
 // FindById implements UserServices.
 func (s *UserServicesImpl) FindById(userId string) response.Response {
-	id, err := strconv.Atoi(userId)
+	id, strConvErr := strconv.Atoi(userId)
 
-	if err != nil {
-		return response.Response{StatusCode: http.StatusBadRequest, Message: err.Error(), Code: helpers.BadRequest}
+	if strConvErr != nil {
+		return response.Response{StatusCode: http.StatusBadRequest, Message: strConvErr.Error(), Code: helpers.BadRequest}
 	}
 
 	user, resErr := s.UserRepository.FindById(id)
@@ -152,10 +152,10 @@ func (s *UserServicesImpl) FindUser(credentials request.SigninUserRequest) respo
 		return response.Response{StatusCode: http.StatusUnprocessableEntity, Message: validationErr.Error(), Code: helpers.UnprocessableEntity}
 	}
 
-	user, err := s.UserRepository.FindUser(credentials.Username, credentials.Password)
+	user, findErr := s.UserRepository.FindUser(credentials.Username, credentials.Password)
 
-	if err != nil {
-		return response.Response{StatusCode: http.StatusUnauthorized, Message: err.Error(), Code: helpers.Unauthorized}
+	if findErr != nil {
+		return response.Response{StatusCode: http.StatusUnauthorized, Message: findErr.Error(), Code: helpers.Unauthorized}
 	}
 
 	accessToken, jwtErr := helpers.GenerateAccessToken(user)

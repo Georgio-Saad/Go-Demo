@@ -29,3 +29,8 @@ type UpdateUserRequest struct {
 type RefreshUserRequest struct {
 	RefreshToken string `json:"refresh_token" validate:"required"`
 }
+
+type VerifyUserRequest struct {
+	UserID           int `json:"user_id"`
+	VerificationCode int `json:"verification_code"`
+}
