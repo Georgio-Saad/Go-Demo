@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewRouter(todoController *controllers.TodoController, userController *controllers.UserController) *gin.Engine {
+func NewRouter(todoController *controllers.TodoController, userController *controllers.UserController, verificationCodeController *controllers.VerificationCodeController) *gin.Engine {
 	router := gin.Default()
 
 	baseRouter := router.Group("/api")
@@ -22,17 +22,17 @@ func NewRouter(todoController *controllers.TodoController, userController *contr
 	authRouter.POST("/refresh", userController.RefreshUser)
 
 	// VERIFICATION CODES ROUTES
-	// verificationCodeRouter := baseRouter.Group("/verification")
+	verificationCodeRouter := baseRouter.Group("/verification")
 
-	// verificationCodeRouter.POST("/:user_id")
+	verificationCodeRouter.Use(middlewares.IsAuth)
 
-	// verificationCodeRouter.GET("/:user_id")
+	verificationCodeRouter.POST("/:user_id", verificationCodeController.CreateVerificationCode)
 
-	// verificationCodeRouter.GET("/:verification_code_id")
+	verificationCodeRouter.GET("/:id", verificationCodeController.GetVerificationCode)
 
-	// verificationCodeRouter.PUT("/:user_id")
+	verificationCodeRouter.PUT("/:user_id", verificationCodeController.UpdateVerificationCode)
 
-	// verificationCodeRouter.DELETE("/:user_id")
+	verificationCodeRouter.DELETE("/:id", verificationCodeController.DeleteVerificationCode)
 
 	// LOGGED IN USER
 	loggedInAuthRoutes := authRouter.Group("/me")

@@ -13,6 +13,5 @@ type VerificationCode struct {
 	DeletedAt        gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
 	VerificationCode string         `json:"verification_code"`
 	AlreadyUsed      bool           `json:"already_used"`
-	UserID           int
-	User             User
+	UserID           int            `json:"user"`
 }

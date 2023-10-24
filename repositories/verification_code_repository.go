@@ -1,10 +1,15 @@
 package repositories
 
-import "todogorest/models"
+import (
+	"todogorest/data/request"
+	"todogorest/models"
+)
 
 type VerificationCodeRepository interface {
-	Create() (models.VerificationCode, error)
-	Update() (models.VerificationCode, error)
-	Delete() error
-	FindByUserId() (models.VerificationCode, error)
+	Create(request.VerificationCodeRequest) (models.VerificationCode, error)
+	Update(request.VerificationCodeRequest) (models.VerificationCode, error)
+	Delete(verificationCodeId int) error
+	DeleteByUserId(userId int) error
+	FindByUserId(userId int) (models.VerificationCode, error)
+	FindById(verificationCodeId int) (models.VerificationCode, error)
 }

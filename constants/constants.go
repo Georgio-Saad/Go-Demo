@@ -11,3 +11,6 @@ var AccessSignKey = []byte("SUPERSIGNSECRETSECRETSIGNSECRET")
 
 var RefreshEncKey = []byte("SUPERSECRETSECRETSECRETSECRETSEC")
 var RefreshSignKey = []byte("SUPERSIGNSECRETSECRETSIGNSECRET")
+
+var VerificationCodeUserIdType = "user"
+var VerificationCodeVerificationCodeType = "code"
