@@ -6,4 +6,6 @@ const (
 	UnprocessableEntity string = "UNPROCESSABLE_ENTITY"
 	NotFound            string = "NOT_FOUND"
 	InvalidData         string = "INVALID_DATA"
+	Unauthorized        string = "UNAUTHRORIZED"
+	Unauthenticated     string = "UNAUTHENTICATED"
 )

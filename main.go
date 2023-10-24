@@ -24,6 +24,8 @@ func main() {
 
 	db.Table("users").AutoMigrate(&models.User{})
 
+	db.Table("verification_codes").AutoMigrate(&models.VerificationCode{})
+
 	r.NoRoute(func(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, response.ErrorResponse{StatusCode: http.StatusNotFound, Code: helpers.NotFound, Data: response.ErrorMessage{Message: "Route not found"}})
 	})

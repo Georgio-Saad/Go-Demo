@@ -18,4 +18,5 @@ type User struct {
 	DateOfBirth *time.Time     `json:"date_of_birth"`
 	CountryCode *string        `json:"country_code"`
 	PhoneNumber *int           `json:"phone_number"`
+	Verified    bool           `json:"verified"`
 }

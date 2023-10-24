@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"errors"
+	"log"
 	"todogorest/data/request"
 	"todogorest/data/response"
 	"todogorest/models"
@@ -16,18 +17,24 @@ type UserRepositoryImpl struct {
 
 // FindByUsername implements UserRepository.
 func (u *UserRepositoryImpl) FindUser(username string, password string) (models.User, error) {
-	var user = models.User{Username: username}
+	var user models.User
 
-	result := u.Db.First(&user, username)
+	result := u.Db.First(&user, models.User{Username: username})
 
 	if result.Error != nil {
-		return models.User{}, errors.New("Please check your login credentials")
+		return models.User{}, errors.New("Please check your login credentials user")
 	}
+
+	log.Default().Println(result.RowsAffected, user)
 
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 
 	if err != nil {
-		return models.User{}, errors.New("Please check your login credentials")
+		return models.User{}, errors.New("Please check your login credentials pass")
+	}
+
+	if !user.Verified {
+		return models.User{}, errors.New("Please verify your account before signing in")
 	}
 
 	return user, nil
@@ -51,6 +58,7 @@ func (u UserRepositoryImpl) Create(userDetails request.CreateUserRequest) (model
 		DateOfBirth: userDetails.DateOfBirth,
 		CountryCode: userDetails.CountryCode,
 		PhoneNumber: userDetails.PhoneNumber,
+		Verified:    false,
 	}
 
 	result := u.Db.Create(&user)
@@ -73,8 +81,16 @@ func (UserRepositoryImpl) FindAll(request.PaginationRequest) (users response.Pag
 }
 
 // FindById implements UserRepository.
-func (UserRepositoryImpl) FindById(userId int) (models.User, error) {
-	panic("unimplemented")
+func (u UserRepositoryImpl) FindById(userId int) (models.User, error) {
+	var user models.User
+
+	userResult := u.Db.First(&user, userId)
+
+	if userResult.Error != nil {
+		return models.User{}, userResult.Error
+	}
+
+	return user, nil
 }
 
 // Update implements UserRepository.

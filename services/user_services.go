@@ -12,4 +12,5 @@ type UserServices interface {
 	FindById(userId string) response.Response
 	FindUser(request.SigninUserRequest) response.Response
 	FindAll(request.PaginationRequest) response.Response
+	Refresh(token string) response.Response
 }

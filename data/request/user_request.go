@@ -25,3 +25,7 @@ type UpdateUserRequest struct {
 	CountryCode *string    `json:"country_code" validate:"required_with=PhoneNumber"`
 	PhoneNumber *int       `json:"phone_number" validate:"required_with=CountryCode"`
 }
+
+type RefreshUserRequest struct {
+	RefreshToken string `json:"refresh_token" validate:"required"`
+}

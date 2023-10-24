@@ -5,7 +5,7 @@ import (
 )
 
 func ValidateRequest(s interface{}) error {
-	validate := validator.New()
+	validate := validator.New(validator.WithRequiredStructEnabled())
 
 	return validate.Struct(s)
 }
