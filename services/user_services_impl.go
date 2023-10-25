@@ -2,7 +2,9 @@ package services
 
 import (
 	"log"
+	"mime/multipart"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 	"todogorest/constants"
@@ -12,12 +14,65 @@ import (
 	"todogorest/repositories"
 	"todogorest/validations"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/kataras/jwt"
 )
 
 type UserServicesImpl struct {
 	UserRepository             repositories.UserRepository
 	VerificationCodeRepository repositories.VerificationCodeRepository
+}
+
+// RemoveProfilePicture implements UserServices.
+func (s *UserServicesImpl) RemoveProfilePicture(userId string) response.Response {
+	id, idErr := strconv.Atoi(userId)
+
+	if idErr != nil {
+		return response.Response{StatusCode: http.StatusBadRequest, Message: idErr.Error(), Code: helpers.BadRequest}
+	}
+
+	user, userErr := s.UserRepository.RemoveProfilePicture(id)
+
+	if userErr != nil {
+		return response.Response{StatusCode: http.StatusNotFound, Message: userErr.Error(), Code: helpers.NotFound}
+	}
+
+	return response.Response{StatusCode: http.StatusOK, Message: "Successfully removed profile picture", Code: helpers.Success, Data: user}
+}
+
+// UploadProfilePicture implements UserServices.
+func (s *UserServicesImpl) UploadProfilePicture(userId string, profilePictureFile multipart.File, profilePictureHeader *multipart.FileHeader, sess *session.Session) response.Response {
+	id, idErr := strconv.Atoi(userId)
+
+	if idErr != nil {
+		return response.Response{StatusCode: http.StatusBadRequest, Message: idErr.Error(), Code: helpers.BadRequest}
+	}
+	bucket := os.Getenv("AWS_S3_BUCKET_NAME")
+
+	uploader := s3manager.NewUploader(sess)
+
+	fileName := userId + "-" + profilePictureHeader.Filename
+
+	upload, uploadErr := uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String(bucket),
+		ACL:    aws.String("public-read"),
+		Key:    &fileName,
+		Body:   profilePictureFile,
+	})
+
+	if uploadErr != nil {
+		return response.Response{StatusCode: http.StatusBadRequest, Message: uploadErr.Error(), Code: helpers.BadRequest}
+	}
+
+	user, userErr := s.UserRepository.SetProfilePicture(id, upload.Location)
+
+	if userErr != nil {
+		return response.Response{StatusCode: http.StatusNotFound, Message: userErr.Error(), Code: helpers.NotFound}
+	}
+
+	return response.Response{StatusCode: http.StatusOK, Message: "Successfully uploaded profile picture", Code: helpers.Success, Data: user}
 }
 
 // ResendVerification implements UserServices.

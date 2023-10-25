@@ -13,10 +13,17 @@ import (
 	"todogorest/services"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
 	r := gin.Default()
+
+	dotEnvErr := godotenv.Load(".env")
+
+	if dotEnvErr != nil {
+		panic(dotEnvErr)
+	}
 
 	db := config.ConnectToDB()
 

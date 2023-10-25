@@ -2,15 +2,24 @@ package routes
 
 import (
 	"todogorest/controllers"
+	"todogorest/helpers"
 	"todogorest/middlewares"
 
 	"github.com/gin-gonic/gin"
 )
 
 func NewRouter(todoController *controllers.TodoController, userController *controllers.UserController, verificationCodeController *controllers.VerificationCodeController) *gin.Engine {
+
+	sess := helpers.ConnectToBucket()
+
 	router := gin.Default()
 
 	baseRouter := router.Group("/api")
+
+	baseRouter.Use(func(ctx *gin.Context) {
+		ctx.Set("sess", sess)
+		ctx.Next()
+	})
 
 	//AUTH
 	authRouter := baseRouter.Group("/auth")
@@ -46,6 +55,10 @@ func NewRouter(todoController *controllers.TodoController, userController *contr
 	loggedInAuthRoutes.GET("/", userController.GetSignedInUser)
 
 	loggedInAuthRoutes.PUT("/")
+
+	loggedInAuthRoutes.PUT("/profile-picture", userController.UploadProfilePicture)
+
+	loggedInAuthRoutes.DELETE("/profile-picture", userController.RemoveProfilePicture)
 
 	//USERS
 	usersRoutes := baseRouter.Group("/users")

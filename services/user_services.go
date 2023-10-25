@@ -1,8 +1,11 @@
 package services
 
 import (
+	"mime/multipart"
 	"todogorest/data/request"
 	"todogorest/data/response"
+
+	"github.com/aws/aws-sdk-go/aws/session"
 )
 
 type UserServices interface {
@@ -15,4 +18,6 @@ type UserServices interface {
 	Refresh(token string) response.Response
 	Verify(request.VerifyUserRequest) response.Response
 	ResendVerification(userId string) response.Response
+	UploadProfilePicture(userId string, profilePicture multipart.File, profilePictureHeader *multipart.FileHeader, sess *session.Session) response.Response
+	RemoveProfilePicture(userId string) response.Response
 }

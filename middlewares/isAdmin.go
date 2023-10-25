@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"log"
 	"net/http"
 	"strings"
 	"todogorest/constants"
@@ -12,7 +11,7 @@ import (
 	"github.com/kataras/jwt"
 )
 
-func IsAuth(ctx *gin.Context) {
+func IsAdmin(ctx *gin.Context) {
 	headerToken := ctx.Request.Header.Get("Authorization")
 
 	var token string
@@ -45,7 +44,6 @@ func IsAuth(ctx *gin.Context) {
 
 	claimsErr := decToken.Claims(&claims)
 
-	log.Default().Println(claims.User.Role)
 	if claimsErr != nil {
 		ctx.JSON(http.StatusUnauthorized, response.ErrorResponse{StatusCode: http.StatusUnauthorized, Code: helpers.Unauthenticated, Data: response.ErrorMessage{Message: claimsErr.Error()}})
 		ctx.Abort()
@@ -59,8 +57,6 @@ func IsAuth(ctx *gin.Context) {
 	}
 
 	ctx.Set("user_id", claims.User.ID)
-
-	log.Default().Println(claims.User.ID)
 
 	ctx.Next()
 }

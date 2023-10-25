@@ -15,6 +15,40 @@ type UserRepositoryImpl struct {
 	Db *gorm.DB
 }
 
+// RemoveProfilePicture implements UserRepository.
+func (u *UserRepositoryImpl) RemoveProfilePicture(userId int) (models.User, error) {
+	var user models.User
+
+	result := u.Db.Model(&models.User{}).Where("id = ?", userId).First(&user)
+
+	if result.Error != nil {
+		return models.User{}, result.Error
+	}
+
+	user.ProfilePicture = nil
+
+	u.Db.Save(&user)
+
+	return user, nil
+}
+
+// SetProfilePicture implements UserRepository.
+func (u *UserRepositoryImpl) SetProfilePicture(userId int, profilePictureUrl string) (models.User, error) {
+	var user models.User
+
+	result := u.Db.Model(&models.User{}).Where("id = ?", userId).First(&user)
+
+	if result.Error != nil {
+		return models.User{}, result.Error
+	}
+
+	user.ProfilePicture = &profilePictureUrl
+
+	u.Db.Save(&user)
+
+	return user, nil
+}
+
 // Save implements UserRepository.
 func (u *UserRepositoryImpl) Save(user *models.User) {
 	u.Db.Save(&user)
@@ -57,13 +91,14 @@ func (u UserRepositoryImpl) Create(userDetails request.CreateUserRequest) (model
 
 	password, _ := bcrypt.GenerateFromPassword([]byte(userDetails.Password), 12)
 	var user = models.User{Username: userDetails.Username,
-		Locale:      userDetails.Locale,
-		Password:    string(password),
-		Email:       userDetails.Email,
-		DateOfBirth: userDetails.DateOfBirth,
-		CountryCode: userDetails.CountryCode,
-		PhoneNumber: userDetails.PhoneNumber,
-		Verified:    false,
+		Password:       string(password),
+		Email:          userDetails.Email,
+		DateOfBirth:    userDetails.DateOfBirth,
+		CountryCode:    userDetails.CountryCode,
+		PhoneNumber:    userDetails.PhoneNumber,
+		Verified:       false,
+		Role:           userDetails.Role,
+		ProfilePicture: nil,
 	}
 
 	result := u.Db.Create(&user)
