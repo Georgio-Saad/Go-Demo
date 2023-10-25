@@ -94,7 +94,7 @@ func (controller *TodoController) UpdateTodo(ctx *gin.Context) {
 	reqError := ctx.ShouldBindJSON(&createTodoRequest)
 
 	if reqError != nil {
-		ctx.JSON(http.StatusConflict, response.ErrorResponse{StatusCode: http.StatusConflict, Code: "INVALID_DATA"})
+		ctx.JSON(http.StatusConflict, response.ErrorResponse{StatusCode: http.StatusConflict, Code: helpers.InvalidData})
 		return
 	}
 

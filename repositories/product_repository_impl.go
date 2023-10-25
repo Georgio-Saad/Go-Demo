@@ -14,16 +14,32 @@ type ProductRepositoryImpl struct {
 	Db *gorm.DB
 }
 
+// FindById implements ProductRepository.
+func (p *ProductRepositoryImpl) FindById(prodId int) (models.Product, error) {
+	var product models.Product
+
+	result := p.Db.Model(&models.Product{}).Where("id = ?", prodId).First(&product)
+
+	if result.Error != nil {
+		return models.Product{}, result.Error
+	}
+
+	return product, nil
+}
+
 // Create implements ProductRepository.
 func (p *ProductRepositoryImpl) Create(prod request.CreateProductRequest) (models.Product, error) {
 	var product models.Product
 	var productAlreadyExists models.Product
 
-	alreadyExistsResult := p.Db.Model(&models.Product{}).Where("product = ?", prod.Product).First(&productAlreadyExists)
+	alreadyExistsResult := p.Db.Model(&models.Product{}).Where("product = ?", prod.Product).Or("slug = ?", prod.Slug).First(&productAlreadyExists)
 
 	if alreadyExistsResult.Error == nil {
 		return models.Product{}, errors.New("Product already exists")
 	}
+
+	product.Product = prod.Product
+	product.Slug = prod.Slug
 
 	result := p.Db.Create(&product)
 

@@ -8,7 +8,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewRouter(todoController *controllers.TodoController, userController *controllers.UserController, verificationCodeController *controllers.VerificationCodeController, generalController *controllers.GeneralController) *gin.Engine {
+func NewRouter(
+	todoController *controllers.TodoController,
+	userController *controllers.UserController,
+	verificationCodeController *controllers.VerificationCodeController,
+	generalController *controllers.GeneralController,
+	productController *controllers.ProductController,
+) *gin.Engine {
 
 	sess := helpers.ConnectToBucket()
 
@@ -37,6 +43,23 @@ func NewRouter(todoController *controllers.TodoController, userController *contr
 	authRouter.PUT("/verify/:user_id", userController.VerifyUser)
 
 	authRouter.PUT("/verify/:user_id/resend", userController.ResendVerification)
+
+	// PRODUCT ROUTES
+	productRouter := baseRouter.Group("/product")
+
+	productRouter.Use(middlewares.IsAuth)
+
+	productRouter.Use(middlewares.IsAdmin)
+
+	productRouter.GET("/all", productController.GetAllProducts)
+
+	productRouter.GET("/:prod_id", productController.GetProduct)
+
+	productRouter.POST("/", productController.CreateProduct)
+
+	productRouter.PUT("/:prod_id", productController.UpdateProduct)
+
+	productRouter.DELETE("/:prod_id", productController.DeleteProduct)
 
 	// VERIFICATION CODES ROUTES
 	verificationCodeRouter := baseRouter.Group("/verification-codes")

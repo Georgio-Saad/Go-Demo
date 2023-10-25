@@ -31,13 +31,13 @@ func main() {
 
 	db := config.ConnectToDB()
 
+	db.Table("products").AutoMigrate(&models.Product{})
+
 	db.Table("todos").AutoMigrate(&models.Todo{})
 
 	db.Table("users").AutoMigrate(&models.User{})
 
 	db.Table("verification_codes").AutoMigrate(&models.VerificationCode{})
-
-	db.Table("products").AutoMigrate(&models.Product{})
 
 	r.NoRoute(func(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, response.ErrorResponse{StatusCode: http.StatusNotFound, Code: helpers.NotFound, Data: response.ErrorMessage{Message: "Route not found"}})
@@ -47,20 +47,23 @@ func main() {
 	todoRepositories := repositories.NewTodoRepository(db)
 	userRepositories := repositories.NewUserRepository(db)
 	verificationCodeRepositories := repositories.NewVerificationCodeRepository(db)
+	productRepositories := repositories.NewProductRepositoryImpl(db)
 
 	// Services
 	todoServices := services.NewTodoServicesImpl(todoRepositories)
 	userServices := services.NewUserServicesImpl(userRepositories, verificationCodeRepositories)
 	verificationCodeServices := services.NewVerificationCodeServicesImpl(verificationCodeRepositories)
+	productServices := services.NewProductServicesImpl(productRepositories)
 
 	// Controllers
 	generalController := controllers.NewGeneralController()
 	todoController := controllers.NewTodoController(todoServices)
 	userController := controllers.NewUserController(userServices)
 	verificationCodeController := controllers.NewVerificationCodeController(verificationCodeServices)
+	productController := controllers.NewProductController(productServices)
 
 	// Routes
-	routes := routes.NewRouter(todoController, userController, verificationCodeController, generalController)
+	routes := routes.NewRouter(todoController, userController, verificationCodeController, generalController, productController)
 
 	server := &http.Server{
 		Addr:    ":5051",

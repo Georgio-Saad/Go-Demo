@@ -47,7 +47,7 @@ func (s *TodoServicesImpl) Delete(todoId string) response.Response {
 
 // FindAll implements TodoServices.
 func (s *TodoServicesImpl) FindAll(pageReq request.PaginationRequest) response.Response {
-	todos, err := s.TodoRepository.GetAll(request.PaginationRequest{Page: pageReq.Page, Size: pageReq.Size})
+	todos, err := s.TodoRepository.GetAll(pageReq)
 
 	if err != nil {
 		return response.Response{StatusCode: http.StatusBadRequest, Message: err.Error(), Code: helpers.BadRequest}

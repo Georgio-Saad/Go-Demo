@@ -17,4 +17,5 @@ type User struct {
 	PhoneNumber    *int       `json:"phone_number"`
 	Verified       bool       `json:"verified"`
 	Role           string     `json:"role"`
+	ProductID      uint       `json:"product_id"`
 }
