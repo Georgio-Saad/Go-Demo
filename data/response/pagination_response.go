@@ -1,6 +1,6 @@
 package response
 
-type PaginationResponse[T any] struct {
+type PaginationResponse[T interface{}] struct {
 	Items       []T  `json:"items"`
 	PerPage     int  `json:"per_page"`
 	Total       int  `json:"total"`

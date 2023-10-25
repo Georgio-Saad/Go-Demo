@@ -1,0 +1,8 @@
+{
+  "hello": "Bonjour",
+  "welcome": "Bienvenue",
+  "invalid_credentials": "Veuillez vérifier vos identifiants de connexion",
+  "no_record_found": "Aucun enregistrement trouvé",
+  "un_authenticated": "Non authentifié",
+  "un_authorized": "Non autorisé"
+}

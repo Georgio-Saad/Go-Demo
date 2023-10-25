@@ -14,3 +14,8 @@ var RefreshSignKey = []byte("SUPERSIGNSECRETSECRETSIGNSECRET")
 
 var VerificationCodeUserIdType = "user"
 var VerificationCodeVerificationCodeType = "code"
+
+var LocaleEN = "en"
+var LocaleAR = "ar"
+var LocaleFR = "fr"
+var LocaleIT = "it"

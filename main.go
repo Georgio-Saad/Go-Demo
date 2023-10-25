@@ -16,6 +16,10 @@ import (
 	"github.com/joho/godotenv"
 )
 
+func init() {
+
+}
+
 func main() {
 	r := gin.Default()
 
@@ -33,6 +37,8 @@ func main() {
 
 	db.Table("verification_codes").AutoMigrate(&models.VerificationCode{})
 
+	db.Table("products").AutoMigrate(&models.Product{})
+
 	r.NoRoute(func(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, response.ErrorResponse{StatusCode: http.StatusNotFound, Code: helpers.NotFound, Data: response.ErrorMessage{Message: "Route not found"}})
 	})
@@ -48,12 +54,13 @@ func main() {
 	verificationCodeServices := services.NewVerificationCodeServicesImpl(verificationCodeRepositories)
 
 	// Controllers
+	generalController := controllers.NewGeneralController()
 	todoController := controllers.NewTodoController(todoServices)
 	userController := controllers.NewUserController(userServices)
 	verificationCodeController := controllers.NewVerificationCodeController(verificationCodeServices)
 
 	// Routes
-	routes := routes.NewRouter(todoController, userController, verificationCodeController)
+	routes := routes.NewRouter(todoController, userController, verificationCodeController, generalController)
 
 	server := &http.Server{
 		Addr:    ":5051",

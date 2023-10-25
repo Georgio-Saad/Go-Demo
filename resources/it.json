@@ -1,0 +1,8 @@
+{
+  "hello": "Ciao",
+  "welcome": "Benvenuto(a)",
+  "invalid_credentials": "Controlla le tue credenziali di accesso",
+  "no_record_found": "Nessun record trovato",
+  "un_authenticated": "Non autenticato",
+  "un_authorized": "Non autorizzato"
+}

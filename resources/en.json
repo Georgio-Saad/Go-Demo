@@ -1,0 +1,8 @@
+{
+  "hello": "Hello",
+  "welcome": "Welcome",
+  "invalid_credentials": "Please check your signin credentials",
+  "no_record_found": "No record found",
+  "un_authenticated": "Unauthenticated",
+  "un_authorized": "Unauthorized"
+}

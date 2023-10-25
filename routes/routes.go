@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewRouter(todoController *controllers.TodoController, userController *controllers.UserController, verificationCodeController *controllers.VerificationCodeController) *gin.Engine {
+func NewRouter(todoController *controllers.TodoController, userController *controllers.UserController, verificationCodeController *controllers.VerificationCodeController, generalController *controllers.GeneralController) *gin.Engine {
 
 	sess := helpers.ConnectToBucket()
 
@@ -16,10 +16,14 @@ func NewRouter(todoController *controllers.TodoController, userController *contr
 
 	baseRouter := router.Group("/api")
 
+	baseRouter.Use(middlewares.SetLocale)
+
 	baseRouter.Use(func(ctx *gin.Context) {
 		ctx.Set("sess", sess)
 		ctx.Next()
 	})
+
+	baseRouter.GET("/general", generalController.GetGeneralData)
 
 	//AUTH
 	authRouter := baseRouter.Group("/auth")
@@ -38,6 +42,8 @@ func NewRouter(todoController *controllers.TodoController, userController *contr
 	verificationCodeRouter := baseRouter.Group("/verification-codes")
 
 	verificationCodeRouter.Use(middlewares.IsAuth)
+
+	verificationCodeRouter.Use(middlewares.IsAdmin)
 
 	verificationCodeRouter.POST("/:user_id", verificationCodeController.CreateVerificationCode)
 

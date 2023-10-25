@@ -1,0 +1,8 @@
+{
+  "hello": "مرحبًا",
+  "welcome": "مرحباً",
+  "invalid_credentials": "يرجى التحقق من بيانات اعتماد تسجيل الدخول الخاصة بك",
+  "no_record_found": "لا يوجد سجلات",
+  "un_authenticated": "غير مصادق عليه",
+  "un_authorized": "غير مصرح"
+}
