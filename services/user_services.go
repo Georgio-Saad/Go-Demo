@@ -13,4 +13,6 @@ type UserServices interface {
 	FindUser(request.SigninUserRequest) response.Response
 	FindAll(request.PaginationRequest) response.Response
 	Refresh(token string) response.Response
+	Verify(request.VerifyUserRequest) response.Response
+	ResendVerification(userId string) response.Response
 }

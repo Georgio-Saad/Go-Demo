@@ -31,6 +31,7 @@ type RefreshUserRequest struct {
 }
 
 type VerifyUserRequest struct {
-	UserID           int `json:"user_id"`
-	VerificationCode int `json:"verification_code"`
+	UserID           string `json:"user_id"`
+	VerificationCode string `json:"verification_code"`
+	Login            bool   `json:"login"`
 }

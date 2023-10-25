@@ -8,4 +8,5 @@ const (
 	InvalidData         string = "INVALID_DATA"
 	Unauthorized        string = "UNAUTHRORIZED"
 	Unauthenticated     string = "UNAUTHENTICATED"
+	Forbidden           string = "FORBIDDEN"
 )

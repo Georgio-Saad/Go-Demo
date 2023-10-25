@@ -12,4 +12,5 @@ type VerificationCodeRepository interface {
 	DeleteByUserId(userId int) error
 	FindByUserId(userId int) (models.VerificationCode, error)
 	FindById(verificationCodeId int) (models.VerificationCode, error)
+	Save(verificationCode *models.VerificationCode)
 }

@@ -1,6 +1,7 @@
 package services
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -15,7 +16,100 @@ import (
 )
 
 type UserServicesImpl struct {
-	UserRepository repositories.UserRepository
+	UserRepository             repositories.UserRepository
+	VerificationCodeRepository repositories.VerificationCodeRepository
+}
+
+// ResendVerification implements UserServices.
+func (s *UserServicesImpl) ResendVerification(userId string) response.Response {
+	id, idErr := strconv.Atoi(userId)
+
+	if idErr != nil {
+		return response.Response{StatusCode: http.StatusBadRequest, Message: idErr.Error(), Code: helpers.BadRequest}
+	}
+
+	user, userErr := s.UserRepository.FindById(id)
+
+	if userErr != nil {
+		return response.Response{StatusCode: http.StatusNotFound, Message: userErr.Error(), Code: helpers.NotFound}
+	}
+
+	verificationCode, verErr := s.VerificationCodeRepository.Update(request.VerificationCodeRequest{UserID: int(user.ID), VerificationCode: helpers.GenerateVerificationCode(), AlreadyUsed: false})
+
+	if verErr != nil {
+		return response.Response{StatusCode: http.StatusNotFound, Message: verErr.Error(), Code: helpers.NotFound}
+	}
+	log.Default().Println(verificationCode)
+
+	return response.Response{StatusCode: http.StatusOK, Message: "Successfully resent verification code", Code: helpers.Success}
+}
+
+// Verify implements UserServices.
+func (s *UserServicesImpl) Verify(verifyData request.VerifyUserRequest) response.Response {
+	id, idErr := strconv.Atoi(verifyData.UserID)
+
+	if idErr != nil {
+		return response.Response{StatusCode: http.StatusBadRequest, Message: idErr.Error(), Code: helpers.BadRequest}
+	}
+
+	user, userErr := s.UserRepository.FindById(id)
+
+	if userErr != nil {
+		return response.Response{StatusCode: http.StatusNotFound, Message: userErr.Error(), Code: helpers.NotFound}
+	}
+
+	if user.Verified && verifyData.Login {
+		return response.Response{StatusCode: http.StatusForbidden, Message: "User already verified", Code: helpers.Forbidden}
+	}
+
+	verificationCode, verErr := s.VerificationCodeRepository.FindByUserId(int(user.ID))
+
+	if verErr != nil {
+		return response.Response{StatusCode: http.StatusNotFound, Message: verErr.Error(), Code: helpers.NotFound}
+	}
+
+	if verificationCode.AlreadyUsed {
+		return response.Response{StatusCode: http.StatusConflict, Message: "Invalid verification code", Code: helpers.InvalidData}
+	}
+
+	isMatching := verifyData.VerificationCode == verificationCode.VerificationCode
+
+	if isMatching {
+		user.Verified = true
+		verificationCode.AlreadyUsed = true
+
+		s.UserRepository.Save(&user)
+		s.VerificationCodeRepository.Save(&verificationCode)
+
+		if verifyData.Login {
+			accessToken, accErr := helpers.GenerateAccessToken(user)
+			refreshToken, refErr := helpers.GenerateRefreshToken(user)
+
+			if accErr != nil {
+				return response.Response{StatusCode: http.StatusConflict, Message: accErr.Error(), Code: helpers.InvalidData}
+			}
+
+			if refErr != nil {
+				return response.Response{StatusCode: http.StatusConflict, Message: refErr.Error(), Code: helpers.InvalidData}
+			}
+
+			return response.Response{
+				StatusCode: http.StatusOK,
+				Message:    "Successfully verified user",
+				Code:       helpers.Success,
+				Data: response.AuthResponse{
+					User:         user,
+					AccessToken:  accessToken,
+					RefreshToken: refreshToken,
+					ExpiresAt:    time.Now().Add(15 * time.Minute).Local().String(),
+				},
+			}
+		}
+
+		return response.Response{StatusCode: http.StatusOK, Message: "Successfully verified user", Code: helpers.Success, Data: user}
+	}
+
+	return response.Response{StatusCode: http.StatusConflict, Message: "Invalid verification code", Code: helpers.InvalidData}
 }
 
 // Refresh implements UserServices.
@@ -93,28 +187,13 @@ func (s *UserServicesImpl) Create(user request.CreateUserRequest) response.Respo
 		return response.Response{StatusCode: http.StatusBadRequest, Message: createErr.Error(), Code: helpers.BadRequest}
 	}
 
-	accessToken, jwtErr := helpers.GenerateAccessToken(userCreated)
-	refreshToken, refErr := helpers.GenerateRefreshToken(userCreated)
+	_, verErr := s.VerificationCodeRepository.Create(request.VerificationCodeRequest{AlreadyUsed: false, VerificationCode: helpers.GenerateVerificationCode(), UserID: int(userCreated.ID)})
 
-	if jwtErr != nil {
-		return response.Response{StatusCode: http.StatusBadRequest, Message: jwtErr.Error(), Code: helpers.BadRequest}
+	if verErr != nil {
+		return response.Response{StatusCode: http.StatusUnprocessableEntity, Message: verErr.Error(), Code: helpers.UnprocessableEntity}
 	}
 
-	if refErr != nil {
-		return response.Response{StatusCode: http.StatusBadRequest, Message: refErr.Error(), Code: helpers.BadRequest}
-	}
-
-	return response.Response{
-		StatusCode: http.StatusCreated,
-		Message:    "Successfully created user",
-		Code:       helpers.Success,
-		Data: response.AuthResponse{
-			User:         userCreated,
-			AccessToken:  accessToken,
-			RefreshToken: refreshToken,
-			ExpiresAt:    time.Now().Add(15 * time.Minute).Local().String(),
-		},
-	}
+	return response.Response{StatusCode: http.StatusCreated, Message: "Signed up successfully, please check your email to verify your account", Code: helpers.Success}
 }
 
 // Delete implements UserServices.
@@ -187,6 +266,6 @@ func (*UserServicesImpl) Update() response.Response {
 	panic("unimplemented")
 }
 
-func NewUserServicesImpl(userRepository repositories.UserRepository) UserServices {
-	return &UserServicesImpl{UserRepository: userRepository}
+func NewUserServicesImpl(userRepository repositories.UserRepository, verificationCodeRepository repositories.VerificationCodeRepository) UserServices {
+	return &UserServicesImpl{UserRepository: userRepository, VerificationCodeRepository: verificationCodeRepository}
 }

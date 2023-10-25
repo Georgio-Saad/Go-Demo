@@ -15,6 +15,11 @@ type UserRepositoryImpl struct {
 	Db *gorm.DB
 }
 
+// Save implements UserRepository.
+func (u *UserRepositoryImpl) Save(user *models.User) {
+	u.Db.Save(&user)
+}
+
 // FindByUsername implements UserRepository.
 func (u *UserRepositoryImpl) FindUser(username string, password string) (models.User, error) {
 	var user models.User
@@ -44,10 +49,10 @@ func (u *UserRepositoryImpl) FindUser(username string, password string) (models.
 func (u UserRepositoryImpl) Create(userDetails request.CreateUserRequest) (models.User, error) {
 	var userAlreadyExists models.User
 
-	userResult := u.Db.Model(&models.User{}).Where("username = ?", userDetails.Username).Find(&userAlreadyExists)
+	userResult := u.Db.Model(&models.User{}).Where("username = ?", userDetails.Username).Or("email = ?", userDetails.Email).First(&userAlreadyExists)
 
-	if userResult.RowsAffected > 0 {
-		return models.User{}, errors.New("A user with this username already exists")
+	if userResult.Error == nil {
+		return models.User{}, errors.New("User already exists")
 	}
 
 	password, _ := bcrypt.GenerateFromPassword([]byte(userDetails.Password), 12)

@@ -13,4 +13,5 @@ type UserRepository interface {
 	FindById(userId int) (models.User, error)
 	FindUser(username string, password string) (models.User, error)
 	FindAll(request.PaginationRequest) (users response.PaginationResponse[models.User], err error)
+	Save(user *models.User)
 }

@@ -21,8 +21,12 @@ func NewRouter(todoController *controllers.TodoController, userController *contr
 
 	authRouter.POST("/refresh", userController.RefreshUser)
 
+	authRouter.PUT("/verify/:user_id", userController.VerifyUser)
+
+	authRouter.PUT("/verify/:user_id/resend", userController.ResendVerification)
+
 	// VERIFICATION CODES ROUTES
-	verificationCodeRouter := baseRouter.Group("/verification")
+	verificationCodeRouter := baseRouter.Group("/verification-codes")
 
 	verificationCodeRouter.Use(middlewares.IsAuth)
 

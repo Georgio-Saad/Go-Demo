@@ -37,7 +37,7 @@ func main() {
 
 	// Services
 	todoServices := services.NewTodoServicesImpl(todoRepositories)
-	userServices := services.NewUserServicesImpl(userRepositories)
+	userServices := services.NewUserServicesImpl(userRepositories, verificationCodeRepositories)
 	verificationCodeServices := services.NewVerificationCodeServicesImpl(verificationCodeRepositories)
 
 	// Controllers

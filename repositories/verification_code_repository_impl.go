@@ -12,6 +12,11 @@ type VerificationCodeRepositoryImpl struct {
 	Db *gorm.DB
 }
 
+// Save implements VerificationCodeRepository.
+func (v *VerificationCodeRepositoryImpl) Save(verificationCode *models.VerificationCode) {
+	v.Db.Save(&verificationCode)
+}
+
 // DeleteByUserId implements VerificationCodeRepository.
 func (v *VerificationCodeRepositoryImpl) DeleteByUserId(userId int) error {
 	var verificationCode models.VerificationCode
@@ -32,7 +37,7 @@ func (v *VerificationCodeRepositoryImpl) Create(verificationCodeDetails request.
 
 	var user models.User
 
-	userResult := v.Db.Model(&models.User{}).Where("id = ?", verificationCodeDetails.UserID).Find(&user)
+	userResult := v.Db.Model(&models.User{}).Where("id = ?", verificationCodeDetails.UserID).First(&user)
 
 	alreadyExistsResult := v.Db.Model(&models.VerificationCode{}).Where("user_id = ?", verificationCodeDetails.UserID).First(&verificationCodeAlreadyExists)
 
