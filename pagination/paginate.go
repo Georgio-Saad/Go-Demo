@@ -2,6 +2,8 @@ package pagination
 
 import (
 	"math"
+	"strconv"
+	"todogorest/constants"
 	"todogorest/data/request"
 	"todogorest/data/response"
 
@@ -11,24 +13,35 @@ import (
 func Paginate[T interface{}](model interface{}, pageReq request.PaginationRequest, db *gorm.DB) (response.PaginationResponse[T], error) {
 	var items []T
 
-	offset := (pageReq.Page - 1) * pageReq.Size
+	var page, pageErr = strconv.Atoi(pageReq.Page)
+	var size, sizeErr = strconv.Atoi(pageReq.Size)
+
+	if pageErr != nil || page < 1 {
+		page = 1
+	}
+
+	if sizeErr != nil || size < 1 {
+		size = constants.PerPage
+	}
+
+	offset := (page - 1) * size
 	total := int64(0)
 
-	result := db.Model(&model).Count(&total).Limit(pageReq.Size).Offset(offset).Find(&items)
+	result := db.Model(&model).Count(&total).Limit(size).Offset(offset).Find(&items)
 
-	totalPages := math.Ceil(float64(total) / float64(int64(pageReq.Size)))
+	totalPages := math.Ceil(float64(total) / float64(int64(size)))
 
-	hasNext := pageReq.Page < int(totalPages)
+	hasNext := page < int(totalPages)
 
-	hasPrev := pageReq.Page > 1
+	hasPrev := page > 1
 
 	if result.Error != nil {
 		return response.PaginationResponse[T]{}, result.Error
 	}
 
 	return response.PaginationResponse[T]{
-		PerPage:     pageReq.Size,
-		CurrentPage: pageReq.Page,
+		PerPage:     size,
+		CurrentPage: page,
 		Items:       items, Total: int(total),
 		FirstPage: 1,
 		LastPage:  int(totalPages),

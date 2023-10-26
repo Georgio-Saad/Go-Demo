@@ -10,5 +10,6 @@ type VerificationCode struct {
 	UpdatedAt        time.Time `json:"-"`
 	VerificationCode string    `json:"verification_code"`
 	AlreadyUsed      bool      `json:"already_used"`
-	UserID           int       `json:"user"`
+	UserID           int       `json:"-" gorm:"notnull;unique"`
+	User             User      `json:"user"`
 }

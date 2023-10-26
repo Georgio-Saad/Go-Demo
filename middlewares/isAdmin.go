@@ -56,6 +56,12 @@ func IsAdmin(ctx *gin.Context) {
 		return
 	}
 
+	if claims.User.Role != "admin" {
+		ctx.JSON(http.StatusUnauthorized, response.ErrorResponse{StatusCode: http.StatusUnauthorized, Code: helpers.Unauthorized, Data: response.ErrorMessage{Message: "Unauthorized"}})
+		ctx.Abort()
+		return
+	}
+
 	ctx.Set("user_id", claims.User.ID)
 
 	ctx.Next()

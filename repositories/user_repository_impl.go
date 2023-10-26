@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"errors"
-	"log"
 	"todogorest/data/request"
 	"todogorest/data/response"
 	"todogorest/models"
@@ -19,7 +18,7 @@ type UserRepositoryImpl struct {
 func (u *UserRepositoryImpl) RemoveProfilePicture(userId int) (models.User, error) {
 	var user models.User
 
-	result := u.Db.Model(&models.User{}).Where("id = ?", userId).First(&user)
+	result := u.Db.Model(&models.User{}).Preload("Product").Where("id = ?", userId).First(&user)
 
 	if result.Error != nil {
 		return models.User{}, result.Error
@@ -36,7 +35,7 @@ func (u *UserRepositoryImpl) RemoveProfilePicture(userId int) (models.User, erro
 func (u *UserRepositoryImpl) SetProfilePicture(userId int, profilePictureUrl string) (models.User, error) {
 	var user models.User
 
-	result := u.Db.Model(&models.User{}).Where("id = ?", userId).First(&user)
+	result := u.Db.Model(&models.User{}).Preload("Product").Where("id = ?", userId).First(&user)
 
 	if result.Error != nil {
 		return models.User{}, result.Error
@@ -58,13 +57,11 @@ func (u *UserRepositoryImpl) Save(user *models.User) {
 func (u *UserRepositoryImpl) FindUser(username string, password string) (models.User, error) {
 	var user models.User
 
-	result := u.Db.First(&user, models.User{Username: username})
+	result := u.Db.Model(&models.User{}).Preload("Product").Where("username = ?", username).First(&user)
 
 	if result.Error != nil {
-		return models.User{}, errors.New("Please check your login credentials user")
+		return models.User{}, result.Error
 	}
-
-	log.Default().Println(result.RowsAffected, user)
 
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 
@@ -81,15 +78,8 @@ func (u *UserRepositoryImpl) FindUser(username string, password string) (models.
 
 // Create implements UserRepository.
 func (u UserRepositoryImpl) Create(userDetails request.CreateUserRequest) (models.User, error) {
-	var userAlreadyExists models.User
-
-	userResult := u.Db.Model(&models.User{}).Where("username = ?", userDetails.Username).Or("email = ?", userDetails.Email).First(&userAlreadyExists)
-
-	if userResult.Error == nil {
-		return models.User{}, errors.New("User already exists")
-	}
-
 	password, _ := bcrypt.GenerateFromPassword([]byte(userDetails.Password), 12)
+
 	var user = models.User{Username: userDetails.Username,
 		Password:       string(password),
 		Email:          userDetails.Email,
@@ -99,12 +89,13 @@ func (u UserRepositoryImpl) Create(userDetails request.CreateUserRequest) (model
 		Verified:       false,
 		Role:           userDetails.Role,
 		ProfilePicture: nil,
+		ProductID:      3,
 	}
 
-	result := u.Db.Create(&user)
+	result := u.Db.Preload("Product").Create(&user)
 
 	if result.Error != nil {
-		return models.User{}, result.Error
+		return models.User{}, errors.New("User already exists")
 	}
 
 	return user, nil
@@ -124,7 +115,7 @@ func (UserRepositoryImpl) FindAll(request.PaginationRequest) (users response.Pag
 func (u UserRepositoryImpl) FindById(userId int) (models.User, error) {
 	var user models.User
 
-	userResult := u.Db.First(&user, userId)
+	userResult := u.Db.Model(&models.User{}).Preload("Product").Where("id = ?", userId).First(&user)
 
 	if userResult.Error != nil {
 		return models.User{}, userResult.Error

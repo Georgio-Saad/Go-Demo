@@ -1,6 +1,6 @@
 package request
 
 type PaginationRequest struct {
-	Page int `json:"page"`
-	Size int `json:"size"`
+	Page string `json:"page"`
+	Size string `json:"size"`
 }

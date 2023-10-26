@@ -44,38 +44,6 @@ func NewRouter(
 
 	authRouter.PUT("/verify/:user_id/resend", userController.ResendVerification)
 
-	// PRODUCT ROUTES
-	productRouter := baseRouter.Group("/product")
-
-	productRouter.Use(middlewares.IsAuth)
-
-	productRouter.Use(middlewares.IsAdmin)
-
-	productRouter.GET("/all", productController.GetAllProducts)
-
-	productRouter.GET("/:prod_id", productController.GetProduct)
-
-	productRouter.POST("/", productController.CreateProduct)
-
-	productRouter.PUT("/:prod_id", productController.UpdateProduct)
-
-	productRouter.DELETE("/:prod_id", productController.DeleteProduct)
-
-	// VERIFICATION CODES ROUTES
-	verificationCodeRouter := baseRouter.Group("/verification-codes")
-
-	verificationCodeRouter.Use(middlewares.IsAuth)
-
-	verificationCodeRouter.Use(middlewares.IsAdmin)
-
-	verificationCodeRouter.POST("/:user_id", verificationCodeController.CreateVerificationCode)
-
-	verificationCodeRouter.GET("/:id", verificationCodeController.GetVerificationCode)
-
-	verificationCodeRouter.PUT("/:user_id", verificationCodeController.UpdateVerificationCode)
-
-	verificationCodeRouter.DELETE("/:id", verificationCodeController.DeleteVerificationCode)
-
 	// LOGGED IN USER
 	loggedInAuthRoutes := authRouter.Group("/me")
 
@@ -110,6 +78,38 @@ func NewRouter(
 	todoRouter.GET("/:todo_id", todoController.GetTodo)
 
 	todoRouter.PUT("/:todo_id", todoController.UpdateTodo)
+
+	//ADMIN ROUTES
+	adminRouter := baseRouter.Group("/admin")
+
+	adminRouter.Use(middlewares.IsAdmin)
+	adminRouter.Use(middlewares.IsAuth)
+
+	adminRouter.GET("/users")
+
+	// VERIFICATION CODES ROUTES
+	verificationCodeRouter := adminRouter.Group("/verification-codes")
+
+	verificationCodeRouter.POST("/:user_id", verificationCodeController.CreateVerificationCode)
+
+	verificationCodeRouter.GET("/:id", verificationCodeController.GetVerificationCode)
+
+	verificationCodeRouter.PUT("/:user_id", verificationCodeController.UpdateVerificationCode)
+
+	verificationCodeRouter.DELETE("/:id", verificationCodeController.DeleteVerificationCode)
+
+	// PRODUCT ROUTES
+	productRouter := adminRouter.Group("/products")
+
+	productRouter.GET("/all", productController.GetAllProducts)
+
+	productRouter.GET("/:prod_id", productController.GetProduct)
+
+	productRouter.POST("/", productController.CreateProduct)
+
+	productRouter.PUT("/:prod_id", productController.UpdateProduct)
+
+	productRouter.DELETE("/:prod_id", productController.DeleteProduct)
 
 	return router
 }

@@ -75,7 +75,7 @@ func (v *VerificationCodeRepositoryImpl) Delete(verificationCodeId int) error {
 func (v *VerificationCodeRepositoryImpl) FindById(verificationCodeId int) (models.VerificationCode, error) {
 	var verificationCode models.VerificationCode
 
-	result := v.Db.Model(&models.VerificationCode{}).Where("id = ?", verificationCodeId).First(&verificationCode)
+	result := v.Db.Model(&models.VerificationCode{}).Preload("User").Preload("User.Product").Where("id = ?", verificationCodeId).First(&verificationCode)
 
 	if result.Error != nil {
 		return models.VerificationCode{}, result.Error
@@ -88,7 +88,7 @@ func (v *VerificationCodeRepositoryImpl) FindById(verificationCodeId int) (model
 func (v *VerificationCodeRepositoryImpl) FindByUserId(userId int) (models.VerificationCode, error) {
 	var verificationCode models.VerificationCode
 
-	result := v.Db.Model(&models.VerificationCode{}).Where("user_id = ?", userId).First(&verificationCode)
+	result := v.Db.Model(&models.VerificationCode{}).Preload("User").Preload("User.Product").Where("user_id = ?", userId).First(&verificationCode)
 
 	if result.Error != nil {
 		return models.VerificationCode{}, result.Error
@@ -101,7 +101,7 @@ func (v *VerificationCodeRepositoryImpl) FindByUserId(userId int) (models.Verifi
 func (v *VerificationCodeRepositoryImpl) Update(verificationCodeDetails request.VerificationCodeRequest) (models.VerificationCode, error) {
 	var verificationCode models.VerificationCode
 
-	result := v.Db.Model(&models.VerificationCode{}).Where("user_id = ?", verificationCodeDetails.UserID).Find(&verificationCode)
+	result := v.Db.Model(&models.VerificationCode{}).Preload("User").Preload("User.Product").Where("user_id = ?", verificationCodeDetails.UserID).Find(&verificationCode)
 
 	if result.RowsAffected == 0 {
 		return models.VerificationCode{}, errors.New("no record found")

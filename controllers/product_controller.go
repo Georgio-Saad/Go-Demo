@@ -3,7 +3,6 @@ package controllers
 import (
 	"net/http"
 	"strconv"
-	"todogorest/constants"
 	"todogorest/data/request"
 	"todogorest/data/response"
 	"todogorest/helpers"
@@ -66,20 +65,10 @@ func (controller *ProductController) UpdateProduct(ctx *gin.Context) {
 }
 
 func (controller *ProductController) GetAllProducts(ctx *gin.Context) {
-	page, pageErr := strconv.Atoi(ctx.Query("page"))
-	size, sizeErr := strconv.Atoi(ctx.Query("limit"))
+	page := ctx.Query("page")
+	size := ctx.Query("limit")
 
-	var res response.Response
-
-	if (sizeErr != nil || size < 1) && (pageErr != nil || page < 1) {
-		res = controller.ProductServices.FindAll(request.PaginationRequest{Page: 1, Size: constants.PerPage})
-	} else if sizeErr != nil || size < 1 {
-		res = controller.ProductServices.FindAll(request.PaginationRequest{Page: page, Size: constants.PerPage})
-	} else if pageErr != nil || page < 1 {
-		res = controller.ProductServices.FindAll(request.PaginationRequest{Page: 1, Size: size})
-	} else {
-		res = controller.ProductServices.FindAll(request.PaginationRequest{Page: page, Size: size})
-	}
+	res := controller.ProductServices.FindAll(request.PaginationRequest{Page: page, Size: size})
 
 	if res.StatusCode != http.StatusOK {
 		ctx.JSON(res.StatusCode, response.ErrorResponse{StatusCode: res.StatusCode, Code: res.Code, Data: response.ErrorMessage{Message: res.Message}})

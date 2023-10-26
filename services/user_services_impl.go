@@ -23,6 +23,7 @@ import (
 type UserServicesImpl struct {
 	UserRepository             repositories.UserRepository
 	VerificationCodeRepository repositories.VerificationCodeRepository
+	JwtBlocklist               *jwt.Blocklist
 }
 
 // RemoveProfilePicture implements UserServices.
@@ -179,7 +180,7 @@ func (s *UserServicesImpl) Refresh(token string) response.Response {
 		return response.Response{StatusCode: http.StatusUnauthorized, Code: helpers.Unauthenticated, Message: decErr.Error()}
 	}
 
-	decToken, jwtErr := jwt.VerifyEncrypted(jwt.HS256, constants.RefreshSignKey, accessDec, []byte(token))
+	decToken, jwtErr := jwt.VerifyEncrypted(jwt.HS256, constants.RefreshSignKey, accessDec, []byte(token), s.JwtBlocklist)
 
 	if jwtErr != nil {
 		return response.Response{StatusCode: http.StatusUnauthorized, Code: helpers.Unauthenticated, Message: jwtErr.Error()}
@@ -190,11 +191,11 @@ func (s *UserServicesImpl) Refresh(token string) response.Response {
 	claimsErr := decToken.Claims(&claims)
 
 	if claimsErr != nil {
-		return response.Response{StatusCode: http.StatusUnauthorized, Code: helpers.Unauthenticated, Message: jwtErr.Error()}
+		return response.Response{StatusCode: http.StatusBadRequest, Code: helpers.BadRequest, Message: claimsErr.Error()}
 	}
 
 	if claims.GrantType != constants.RefreshToken {
-		return response.Response{StatusCode: http.StatusUnauthorized, Code: helpers.Unauthenticated, Message: "Unauthorized"}
+		return response.Response{StatusCode: http.StatusBadRequest, Code: helpers.BadRequest, Message: "Invalid Token"}
 	}
 
 	user, resErr := s.UserRepository.FindById(int(claims.User.ID))
@@ -213,6 +214,8 @@ func (s *UserServicesImpl) Refresh(token string) response.Response {
 	if refErr != nil {
 		return response.Response{StatusCode: http.StatusConflict, Message: refErr.Error(), Code: helpers.InvalidData}
 	}
+
+	s.JwtBlocklist.InvalidateToken([]byte(token), claims.Claims)
 
 	return response.Response{
 		StatusCode: http.StatusOK,
@@ -321,6 +324,6 @@ func (*UserServicesImpl) Update() response.Response {
 	panic("unimplemented")
 }
 
-func NewUserServicesImpl(userRepository repositories.UserRepository, verificationCodeRepository repositories.VerificationCodeRepository) UserServices {
-	return &UserServicesImpl{UserRepository: userRepository, VerificationCodeRepository: verificationCodeRepository}
+func NewUserServicesImpl(userRepository repositories.UserRepository, verificationCodeRepository repositories.VerificationCodeRepository, blocklist *jwt.Blocklist) UserServices {
+	return &UserServicesImpl{UserRepository: userRepository, VerificationCodeRepository: verificationCodeRepository, JwtBlocklist: blocklist}
 }

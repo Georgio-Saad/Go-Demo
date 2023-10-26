@@ -30,13 +30,6 @@ func (p *ProductRepositoryImpl) FindById(prodId int) (models.Product, error) {
 // Create implements ProductRepository.
 func (p *ProductRepositoryImpl) Create(prod request.CreateProductRequest) (models.Product, error) {
 	var product models.Product
-	var productAlreadyExists models.Product
-
-	alreadyExistsResult := p.Db.Model(&models.Product{}).Where("product = ?", prod.Product).Or("slug = ?", prod.Slug).First(&productAlreadyExists)
-
-	if alreadyExistsResult.Error == nil {
-		return models.Product{}, errors.New("Product already exists")
-	}
 
 	product.Product = prod.Product
 	product.Slug = prod.Slug
@@ -44,7 +37,7 @@ func (p *ProductRepositoryImpl) Create(prod request.CreateProductRequest) (model
 	result := p.Db.Create(&product)
 
 	if result.Error != nil {
-		return models.Product{}, result.Error
+		return models.Product{}, errors.New("Product already exists")
 	}
 
 	return product, nil
@@ -83,15 +76,11 @@ func (p *ProductRepositoryImpl) Save(product *models.Product) {
 func (p *ProductRepositoryImpl) Update(prod request.UpdateProductRequest) (models.Product, error) {
 	var product models.Product
 
-	result := p.Db.Model(&models.Product{}).Where("id = ?", prod.ProductID).First(&product)
+	result := p.Db.Model(&product).Where("id = ?", prod.ProductID).Update("product", prod.Product).First(&product)
 
 	if result.Error != nil {
-		return models.Product{}, nil
+		return models.Product{}, result.Error
 	}
-
-	product.Product = prod.Product
-
-	p.Db.Save(&product)
 
 	return product, nil
 }
